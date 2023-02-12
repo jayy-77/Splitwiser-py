@@ -39,10 +39,12 @@ if response != False:
         elif choice == '3':
             doc_ref = db.collection("Users").document(response.email)
             data = doc_ref.get()
+            room_dict = {}
             code_list = data.to_dict()['joined_rooms']
-            for i in code_list:
-                doc_ref = db.collection("Rooms").document(str(i))
-                print(doc_ref.get().to_dict()['room_name'])
+            for index,code in enumerate(code_list,1):
+                doc_ref = db.collection("Rooms").document(str(code))
+                room_dict[index] = doc_ref.id
+                print(index,doc_ref.get().to_dict()['room_name'])
         else:
             print("Wrong input.")
 else:
