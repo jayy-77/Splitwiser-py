@@ -47,8 +47,3 @@ if response != False:
             print("Wrong input.")
 else:
     exit()
-
-
-
-
-
