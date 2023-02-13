@@ -12,7 +12,7 @@ import UserData
 
 def init():
     print("Welcome to Splitwiser\nAuthentication Page: \n")
-    email = "jay@gmail.com"
+    email = "a@gmail.com"
     password = "qwerty"
     signinResponse = sign_in(email,password)
 

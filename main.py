@@ -2,6 +2,7 @@ import Authentication
 from firebase_admin import firestore
 import UserData
 import random
+import Room
 db = firestore.client()
 response = Authentication.init()
 
@@ -12,12 +13,11 @@ if response != False:
     print("*"*(len(headFormat)+4))
     print("*",headFormat,"*")
     print("*"*(len(headFormat)+4))
-    print("1.Create a Room.\n2.Join a Room\n3.Show joined Rooms.\n")
-    choice = 'w'
+    print("1.Create a Room.\n2.Join a Room\n3.Rooms.\n")
+    choice = None
     doc_ref_per = db.collection("Users").document(response.email)
     while choice != 'q':
         choice = input("Enter Choice: ")
-
         if choice == '1':
             code = random.randint(1000,9999)
             doc_ref = db.collection("Rooms").document(str(code))
@@ -33,9 +33,7 @@ if response != False:
                     doc_ref = db.collection("Rooms").document(code_input)
                     doc_ref_per.update({"joined_rooms": firestore.ArrayUnion([code_input])})
                     doc_ref.update({"joined_users":firestore.ArrayUnion([response.email])})
-                else:
-                    print("No room exits.")
-
+                    print("Successfully joined room")
         elif choice == '3':
             doc_ref = db.collection("Users").document(response.email)
             data = doc_ref.get()
@@ -45,6 +43,9 @@ if response != False:
                 doc_ref = db.collection("Rooms").document(str(code))
                 room_dict[index] = doc_ref.id
                 print(index,doc_ref.get().to_dict()['room_name'])
+            print(room_dict)
+            room_input = int(input("Which Room ??: "))
+            Room.room_init(room_dict[room_input],response)
         else:
             print("Wrong input.")
 else:
