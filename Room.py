@@ -1,5 +1,6 @@
 from firebase_admin import firestore
 import random
+from prettytable import PrettyTable
 db = firestore.client()
 def room_init(room_id,response):
         doc_ref_room = db.collection("Rooms").document(room_id)

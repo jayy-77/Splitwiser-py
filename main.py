@@ -1,5 +1,6 @@
 import Authentication
 from firebase_admin import firestore
+from prettytable import PrettyTable
 import UserData
 import random
 import Room
@@ -9,11 +10,15 @@ response = Authentication.init()
 if response != False:
     print("Signed in successfully to Splitwiser.")
     userData = UserData.load_user_data(response.email)
-    headFormat ="Email: {} || UPI: {}".format(response.email,userData['UPI'])
-    print("*"*(len(headFormat)+4))
-    print("*",headFormat,"*")
-    print("*"*(len(headFormat)+4))
-    print("1.Create a Room.\n2.Join a Room\n3.Rooms.\n")
+    t_head = PrettyTable(['Email', 'UPI'])
+    t_head.add_row([response.email,userData['UPI']])
+    print(t_head)
+    t = PrettyTable(['Index', 'Options'])
+    t.add_row(['1','Create a Room'])
+    t.add_row(['2','Join a Room'])
+    t.add_row(['3','Show Rooms'])
+    t.add_row()
+    print(t)
     choice = None
     doc_ref_per = db.collection("Users").document(response.email)
     while choice != 'q':

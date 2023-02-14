@@ -9,11 +9,10 @@ global upi
 db = firestore.client()
 
 import UserData
-
 def init():
     print("Welcome to Splitwiser\nAuthentication Page: \n")
-    email = "a@gmail.com"
-    password = "qwerty"
+    email = 'a@gmail.com'
+    password = 'qwerty'
     signinResponse = sign_in(email,password)
 
     if signinResponse == False:
