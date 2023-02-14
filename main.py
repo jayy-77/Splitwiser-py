@@ -17,7 +17,6 @@ if response != False:
     t.add_row(['1','Create a Room'])
     t.add_row(['2','Join a Room'])
     t.add_row(['3','Show Rooms'])
-    t.add_row()
     print(t)
     choice = None
     doc_ref_per = db.collection("Users").document(response.email)
@@ -44,11 +43,12 @@ if response != False:
             data = doc_ref.get()
             room_dict = {}
             code_list = data.to_dict()['joined_rooms']
+            t_room = PrettyTable(['Index', 'Rooms'])
             for index,code in enumerate(code_list,1):
                 doc_ref = db.collection("Rooms").document(str(code))
                 room_dict[index] = doc_ref.id
-                print(index,doc_ref.get().to_dict()['room_name'])
-            print(room_dict)
+                t_room.add_row([index,doc_ref.get().to_dict()['room_name']])
+            print(t_room)
             room_input = int(input("Which Room ??: "))
             Room.room_init(room_dict[room_input],response)
         else:
