@@ -13,14 +13,14 @@ if response != False:
     t_head = PrettyTable(['Email', 'UPI'])
     t_head.add_row([response.email,userData['UPI']])
     print(t_head)
-    t = PrettyTable(['Index', 'Options'])
-    t.add_row(['1','Create a Room'])
-    t.add_row(['2','Join a Room'])
-    t.add_row(['3','Show Rooms'])
-    print(t)
     choice = None
     doc_ref_per = db.collection("Users").document(response.email)
     while choice != 'q':
+        t = PrettyTable(['Index', 'Options'])
+        t.add_row(['1', 'Create a Room'])
+        t.add_row(['2', 'Join a Room'])
+        t.add_row(['3', 'Show Rooms'])
+        print(t)
         choice = input("Enter Choice: ")
         if choice == '1':
             code = random.randint(1000,9999)
@@ -28,6 +28,7 @@ if response != False:
             roomName = input("Room Name: ")
             doc_ref.set({"room_name":roomName,"joined_users":[response.email]})
             doc_ref_per.update({"joined_rooms":firestore.ArrayUnion([code])})
+            print("Room created successfully.")
 
         elif choice == '2':
             code_input = (input("Enter room code: "))

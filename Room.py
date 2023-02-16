@@ -30,12 +30,15 @@ def split_request(room_id,response,doc_ref_room):
     split_dict = {}
     paid = []
     unpaid= []
+    payment_approvals = []
     split_name = input("Split Name: ")
     total_amount = int(input("Split Amount: "))
     print("Select users")
+    user_t = PrettyTable(['=>','Select users'])
     for index,user in enumerate(user_info(room_id),1):
         user_dict[index] = user
-        print(index,user)
+        user_t.add_row([index,user])
+    print(user_t)
     select_user_input = eval(input())
     select_user_list = [user_dict[i] for i in select_user_input]
     total_user = len(select_user_list)
@@ -53,6 +56,7 @@ def split_request(room_id,response,doc_ref_room):
         "split_amount":total_amount/total_user,
         "unpaid":unpaid,
         "paid": paid,
+        "payment_approvals": payment_approvals
     }
     doc_ref_room.collection("Splits").document(str(random.randint(1000,9999))).set(split_dict)
     print("Split created successfully.")
@@ -71,7 +75,6 @@ def show_split_data(room_id,response):
         split_head.add_row(['Paid: ',value['paid']])
         split_head.add_row(['UnPaid: ',value['unpaid']])
         print(split_head)
-    print(room_data)
 
     user_room_code = input("Enter room code for payment: ")
     for key,value in room_data.items():
@@ -82,7 +85,14 @@ def show_split_data(room_id,response):
                 UPI.make_payment(value['split_sender'],value['split_name'],value['split_amount'])
                 choice = input("Success | Failed (y/n)")
                 if choice.lower() == 'y':
-                    pass
+                    doc_split_ref.document(user_room_code).update(
+                        {
+                            "payment_approvals":firestore.ArrayUnion([{
+                            "Amount":value['split_amount'],
+                            "sender":response.email
+                        }])}
+                    )
+
                 elif choice.lower() == 'n':
                     pass
             else:
