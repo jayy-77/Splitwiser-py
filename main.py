@@ -38,6 +38,7 @@ if response != False:
                     doc_ref_per.update({"joined_rooms": firestore.ArrayUnion([code_input])})
                     doc_ref.update({"joined_users":firestore.ArrayUnion([response.email])})
                     print("Successfully joined room")
+
         elif choice == '3':
             doc_ref = db.collection("Users").document(response.email)
             data = doc_ref.get()

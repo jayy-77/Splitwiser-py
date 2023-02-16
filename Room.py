@@ -1,19 +1,30 @@
 from firebase_admin import firestore
 import random
 from prettytable import PrettyTable
+
+import UPI
+
 db = firestore.client()
 def room_init(room_id,response):
         doc_ref_room = db.collection("Rooms").document(room_id)
         doc_room_data = doc_ref_room.get().to_dict()
-        print("Room Name:",doc_room_data['room_name'])
-        print("1.Split Request\n2.Split Info\n")
+
         choice = None
         while choice != 'q':
+            room_head = PrettyTable(['Room Name',doc_room_data['room_name']])
+            room_head.add_row(['Index','Options'])
+            room_head.add_row(['-----','-------'])
+            room_head.add_row(['1','Split Request'])
+            room_head.add_row(['2','Split Info'])
+            room_head.add_row(['3','Payment Approvals'])
+            print(room_head)
             choice = int(input("choice: "))
             if choice == 1:
                 split_request(room_id,response,doc_ref_room)
             elif choice == 2:
-                show_split_data(room_id)
+                show_split_data(room_id,response)
+            elif choice == 3:
+                pass
 def split_request(room_id,response,doc_ref_room):
     user_dict = {}
     split_dict = {}
@@ -45,7 +56,7 @@ def split_request(room_id,response,doc_ref_room):
     }
     doc_ref_room.collection("Splits").document(str(random.randint(1000,9999))).set(split_dict)
     print("Split created successfully.")
-def show_split_data(room_id):
+def show_split_data(room_id,response):
     room_data = {}
     doc_split_ref = db.collection("Rooms").document(room_id).collection("Splits")
     split_codes = [doc.id for doc in doc_split_ref.stream()]
@@ -60,6 +71,23 @@ def show_split_data(room_id):
         split_head.add_row(['Paid: ',value['paid']])
         split_head.add_row(['UnPaid: ',value['unpaid']])
         print(split_head)
+    print(room_data)
+
+    user_room_code = input("Enter room code for payment: ")
+    for key,value in room_data.items():
+        if user_room_code == key:
+            if response.email in value['paid']:
+                print("You already paid.")
+            elif response.email in value['unpaid']:
+                UPI.make_payment(value['split_sender'],value['split_name'],value['split_amount'])
+                choice = input("Success | Failed (y/n)")
+                if choice.lower() == 'y':
+                    pass
+                elif choice.lower() == 'n':
+                    pass
+            else:
+                print("No need to pay.")
+
 def user_info(room_id):
     doc_ref_user = db.collection("Rooms").document(room_id)
     return doc_ref_user.get().to_dict()['joined_users']
