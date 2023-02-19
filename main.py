@@ -6,7 +6,8 @@ import random
 import Room
 db = firestore.client()
 response = Authentication.init()
-
+#test
+#test
 if response != False:
     print("Signed in successfully to Splitwiser.")
     userData = UserData.load_user_data(response.email)

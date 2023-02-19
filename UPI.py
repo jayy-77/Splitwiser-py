@@ -3,7 +3,6 @@ import urllib.parse
 import qrcode
 import random
 from firebase_admin import firestore
-
 db = firestore.client()
 def make_payment(email,note,amount):
     user_doc_ref = db.collection("Users").document(email)
