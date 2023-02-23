@@ -8,7 +8,6 @@ db = firestore.client()
 def room_init(room_id,response):
         doc_ref_room = db.collection("Rooms").document(room_id)
         doc_room_data = doc_ref_room.get().to_dict()
-
         choice = None
         while choice != 'q':
             room_head = PrettyTable(['Room Name',doc_room_data['room_name']])
@@ -17,6 +16,7 @@ def room_init(room_id,response):
             room_head.add_row(['1','Split Request'])
             room_head.add_row(['2','Split Info'])
             room_head.add_row(['3','Payment Approvals'])
+            room_head.add_row(['4','Settlement'])
             print(room_head)
             choice = int(input("choice: "))
             if choice == 1:
@@ -24,7 +24,7 @@ def room_init(room_id,response):
             elif choice == 2:
                 show_split_data(room_id,response)
             elif choice == 3:
-                pass
+                payment_aprovals(room_id,doc_ref_room,response)
 def split_request(room_id,response,doc_ref_room):
     user_dict = {}
     split_dict = {}
@@ -97,7 +97,23 @@ def show_split_data(room_id,response):
                     pass
             else:
                 print("No need to pay.")
-
+def payment_aprovals(room_id,doc_ref_room,response):
+    doc_ref_room_split = doc_ref_room.collection("Splits")
+    local_data = {}
+    split_codes = [doc.id for doc in doc_ref_room_split.stream()]
+    for i in split_codes:
+        local_data[i] = doc_ref_room_split.document(i).get().to_dict()
+    pa_table = PrettyTable(['index','Room Code','User Name','Amount'])
+    for room_code, room_data in local_data.items():
+        for index,name in enumerate(room_data['payment_approvals']):
+            pa_table.add_row([index,room_code, name['sender'], room_data['split_amount']])
+    print(pa_table)
+    choice = eval(input("Enter (index,code) for payment approval: "))
+    paid_user = local_data[str(choice[1])]['payment_approvals'][int(choice[0])]['sender']
+    del local_data[str(choice[1])]['payment_approvals'][int(choice[0])]
+    local_data[str(choice[1])]['paid'].append(paid_user)
+    local_data[str(choice[1])]['unpaid'].remove(paid_user)
+    doc_ref_room_split.document(str(choice[1])).update(local_data[str(choice[1])])
 def user_info(room_id):
     doc_ref_user = db.collection("Rooms").document(room_id)
     return doc_ref_user.get().to_dict()['joined_users']

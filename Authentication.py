@@ -11,8 +11,8 @@ db = firestore.client()
 import UserData
 def init():
     print("Welcome to Splitwiser\nAuthentication Page: \n")
-    email = input("Email: ")
-    password = input("Password: ")
+    email = 'a@gmail.com'
+    password = 'qwerty'
     signinResponse = sign_in(email,password)
 
     if signinResponse == False:
