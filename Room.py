@@ -25,6 +25,8 @@ def room_init(room_id,response):
                 show_split_data(room_id,response)
             elif choice == 3:
                 payment_aprovals(room_id,doc_ref_room,response)
+            elif choice == 4:
+                payment_settlement(room_id,doc_ref_room,response)
 def split_request(room_id,response,doc_ref_room):
     user_dict = {}
     split_dict = {}
@@ -89,7 +91,8 @@ def show_split_data(room_id,response):
                         {
                             "payment_approvals":firestore.ArrayUnion([{
                             "Amount":value['split_amount'],
-                            "sender":response.email
+                            "sender":response.email,
+                            "type":"single"
                         }])}
                     )
 
@@ -100,13 +103,20 @@ def show_split_data(room_id,response):
 def payment_aprovals(room_id,doc_ref_room,response):
     doc_ref_room_split = doc_ref_room.collection("Splits")
     local_data = {}
+    local_data_settlement = {}
     split_codes = [doc.id for doc in doc_ref_room_split.stream()]
+    settlement_codes = [doc.id for doc in doc_ref_room.collection("Settlement").stream()]
     for i in split_codes:
         local_data[i] = doc_ref_room_split.document(i).get().to_dict()
-    pa_table = PrettyTable(['index','Room Code','User Name','Amount'])
+    for i in settlement_codes:
+        local_data_settlement[i] = doc_ref_room.collection("Settlement").document(i).get().to_dict()
+    pa_table = PrettyTable(['index','Room Code','User Name','Amount','Type'])
     for room_code, room_data in local_data.items():
         for index,name in enumerate(room_data['payment_approvals']):
-            pa_table.add_row([index,room_code, name['sender'], room_data['split_amount']])
+            pa_table.add_row([index,room_code, name['sender'], room_data['split_amount'], name['type']])
+    for room_code, room_data in local_data_settlement.items():
+        for index,name in enumerate(room_data['payment_approvals']):
+            pa_table.add_row([index,room_code, name['sender'], name['Amount'], name['type']])
     print(pa_table)
     choice = eval(input("Enter (index,code) for payment approval: "))
     paid_user = local_data[str(choice[1])]['payment_approvals'][int(choice[0])]['sender']
@@ -114,6 +124,46 @@ def payment_aprovals(room_id,doc_ref_room,response):
     local_data[str(choice[1])]['paid'].append(paid_user)
     local_data[str(choice[1])]['unpaid'].remove(paid_user)
     doc_ref_room_split.document(str(choice[1])).update(local_data[str(choice[1])])
+def payment_settlement(room_id,doc_ref_room,response):
+    self_usr = 0
+    opp_usr = 0
+    doc_ref_room_split = doc_ref_room.collection("Splits")
+    ps_table = PrettyTable(['Index','User'])
+    user_list = user_info(room_id)
+    for index,user in enumerate(user_list,1):
+        ps_table.add_row([index,user])
+    print(ps_table)
+    user_choice = int(input("Which user? "))
+    split_codes = [doc.id for doc in doc_ref_room_split.stream()]
+    for i in split_codes:
+        split_data = doc_ref_room_split.document(i).get().to_dict()
+        if split_data['split_sender'] == response.email and user_list[user_choice-1] in split_data['unpaid']:
+            self_usr += split_data['split_amount']
+        elif split_data['split_sender'] == user_list[user_choice-1] and response.email in split_data['unpaid']:
+            opp_usr += split_data['split_amount']
+    if self_usr-opp_usr < 0:
+        print("You have to pay",user_list[user_choice-1],abs(self_usr-opp_usr))
+        UPI.make_payment(user_list[user_choice-1], split_data['split_name'], opp_usr-self_usr)
+        choice = input("Success | Failed (y/n)")
+        if choice.lower() == 'y':
+            doc_ref_room.collection("Settlement").document(str(random.randint(1000,9999))).set(
+                    {
+                            "payment_approvals": firestore.ArrayUnion([{
+                            "Amount": opp_usr-self_usr,
+                            "sender": response.email,
+                            "type":"settlement"
+                        }])}
+                )
+        else:
+            pass
+    else:
+        print(user_list[user_choice-1],"owe you",self_usr-opp_usr)
+
+
+
+
+
+
 def user_info(room_id):
     doc_ref_user = db.collection("Rooms").document(room_id)
     return doc_ref_user.get().to_dict()['joined_users']
