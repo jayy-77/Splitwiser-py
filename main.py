@@ -22,6 +22,7 @@ if response != False:
         t.add_row(['3', 'Show Rooms'])
         print(t)
         choice = input("Enter Choice: ")
+
         if choice == '1':
             code = random.randint(1000,9999)
             doc_ref = db.collection("Rooms").document(str(code))
@@ -39,12 +40,14 @@ if response != False:
                     doc_ref_per.update({"joined_rooms": firestore.ArrayUnion([code_input])})
                     doc_ref.update({"joined_users":firestore.ArrayUnion([response.email])})
                     print("Successfully joined room")
+                    break
+            else:
+                print("Room not found.")
 
         elif choice == '3':
             doc_ref = db.collection("Users").document(response.email)
-            data = doc_ref.get()
             room_dict = {}
-            code_list = data.to_dict()['joined_rooms']
+            code_list = doc_ref.get().to_dict()['joined_rooms']
             t_room = PrettyTable(['Index', 'Rooms'])
             for index,code in enumerate(code_list,1):
                 doc_ref = db.collection("Rooms").document(str(code))

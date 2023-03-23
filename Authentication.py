@@ -11,8 +11,8 @@ db = firestore.client()
 import UserData
 def init():
     print("Welcome to Splitwiser\nAuthentication Page: \n")
-    email = 'sanket@gmail.com'
-    password = 'sanket123'
+    email = 'jay@gmail.com'
+    password = 'qwerty'
     signinResponse = sign_in(email,password)
 
     if signinResponse == False:
@@ -47,7 +47,11 @@ def sign_in(email, password):
 def store_credentials(user,upi,password):
     try:
         doc_ref = db.collection("Users").document(user.email)
-        doc_ref.set({"Email:":user.email,"UPI":upi,"Password":password})
+        doc_ref.set({
+                "Email:":user.email,
+                "UPI":upi,
+                "Password":password
+            })
     except Exception as error:
         print("Error stroring user credentials {}".format(error))
         return False
