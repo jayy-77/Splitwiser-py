@@ -38,7 +38,6 @@ def payment_aprovals(room_id,doc_ref_room,response):
     for i in settlement_codes:
         local_data_settlement[i] = doc_ref_room.collection("Settlement").document(i).get().to_dict()
     pa_table = PrettyTable(['index','Room Code','User Name','Amount','Type'])
-    print(local_data,'\n',local_data_settlement)
     for room_code, room_data in local_data.items():
         for index,name in enumerate(room_data['payment_approvals']):
             if room_data['split_sender'] == response.email:
