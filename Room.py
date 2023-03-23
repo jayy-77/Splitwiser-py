@@ -38,12 +38,15 @@ def payment_aprovals(room_id,doc_ref_room,response):
     for i in settlement_codes:
         local_data_settlement[i] = doc_ref_room.collection("Settlement").document(i).get().to_dict()
     pa_table = PrettyTable(['index','Room Code','User Name','Amount','Type'])
+    print(local_data,'\n',local_data_settlement)
     for room_code, room_data in local_data.items():
         for index,name in enumerate(room_data['payment_approvals']):
-            pa_table.add_row([index,room_code, name['sender'], room_data['split_amount'], name['type']])
+            if room_data['split_sender'] == response.email:
+                pa_table.add_row([index,room_code, name['sender'], room_data['split_amount'], name['type']])
     for room_code, room_data in local_data_settlement.items():
         for index,name in enumerate(room_data['payment_approvals']):
-            pa_table.add_row([index,room_code, name['sender'], name['Amount'], name['type']])
+            if room_data['payment_approvals'][0]['split_sender'] == response.email:
+                pa_table.add_row([index,room_code, name['sender'], name['Amount'], name['type']])
     print(pa_table)
     choice = eval(input("Enter (index,code) for payment approval: "))
     if str(choice[1]) in local_data:
