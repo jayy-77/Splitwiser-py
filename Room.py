@@ -46,8 +46,6 @@ def payment_aprovals(room_id,doc_ref_room,response):
             pa_table.add_row([index,room_code, name['sender'], name['Amount'], name['type']])
     print(pa_table)
     choice = eval(input("Enter (index,code) for payment approval: "))
-    print(local_data)
-    print(local_data_settlement)
     if str(choice[1]) in local_data:
         paid_user = local_data[str(choice[1])]['payment_approvals'][int(choice[0])]['sender']
         del local_data[str(choice[1])]['payment_approvals'][int(choice[0])]
